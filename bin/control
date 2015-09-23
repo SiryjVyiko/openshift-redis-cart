@@ -100,7 +100,8 @@ function stop() {
     fi
 
     if [ -f $sentinel_pid ]; then
-        redis-cli $REDIS_SENTINEL_CLI SHUTDOWN
+        kill -9 `cat pid/redis-sentinel.pid`;
+	rm -f $sentinel_pid;
         s=$?
     fi
 
