@@ -63,7 +63,10 @@ function update() {
 }
 
 function start() {
+    [ -f $pid ] && [ -z $(ps aux|grep "redis-server -" | grep -v "redis-server - --sentinel" | grep -v grep) ] && rm -f $pid;
+    [ -f $sentinel_pid ] && [ -z $(ps aux|grep "redis-server - --sentinel" | grep -v grep) ] && rm -f $sentinel_pid;
     if ! [ -f $pid ]; then
+        kill -9 $(ps aux|grep "redis-server -" | grep -v "redis-server - --sentinel" | grep -v grep | awk '{print $2}') 2>/dev/null;
         chmod 755 /opt/repo/env;
         echo $REDIS_CLI > env/REDIS_CLI;
         erb conf/redis.conf.erb | redis-server -
@@ -75,9 +78,10 @@ function start() {
         fi
         echo "Redis node started successfully!"
     else
-	echo "Redis server is already started"
+        echo "Redis server is already started"
     fi
     if ! [ -f $sentinel_pid ]; then
+            kill -9 $(ps aux| grep "redis-server - --sentinel" | grep -v grep | awk '{print $2}') 2>/dev/null;
             echo $REDIS_SENTINEL_CLI > env/REDIS_SENTINEL_CLI
             erb conf/redis-sentinel.conf.erb | redis-server - --sentinel
             ret=$?
@@ -100,7 +104,7 @@ function stop() {
     fi
 
     if [ -f $sentinel_pid ]; then
-        kill -9 `cat pid/redis-sentinel.pid`;
+        kill -9 $(cat pid/redis-sentinel.pid) 2>/dev/null;
 	rm -f $sentinel_pid;
         s=$?
     fi
@@ -111,17 +115,18 @@ function stop() {
     fi
 
     if [ -f $pid ]; then
-        kill -s SIGTERM $(cat $pid)
+        kill -s SIGTERM $(cat $pid) 2>/dev/null;
         rm $pid
     fi
 
     if [ -f $sentinel_pid ]; then
-        kill -s SIGTERM $(cat $sentinel_pid)
+        kill -s SIGTERM $(cat $sentinel_pid) 2>/dev/null;
         rm $sentinel_pid
     fi        
 
     return 1
 }
+
 
 function restart() {
     if (stop); then
