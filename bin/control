@@ -1,7 +1,9 @@
 #!/bin/bash
 
-pid=pid/redis.pid
-sentinel_pid=pid/redis-sentinel.pid
+. /etc/jelastic/environment
+
+pid=/opt/repo/pid/redis.pid
+sentinel_pid=/opt/repo/pid/redis-sentinel.pid
 
 if [ -n $REDIS_PASSWORD ]; then
     CLI_AUTH="-a $REDIS_PASSWORD"
@@ -63,13 +65,13 @@ function update() {
 }
 
 function start() {
-    [ -f $pid ] && [ -z $(ps aux|grep "redis-server -" | grep -v "redis-server - --sentinel" | grep -v grep) ] && rm -f $pid;
-    [ -f $sentinel_pid ] && [ -z $(ps aux|grep "redis-server - --sentinel" | grep -v grep) ] && rm -f $sentinel_pid;
+    [ -f $pid ] && [ -z $(ps aux|grep "redis-server 0.0.0.0:6379" | grep -v "redis-server 0.0.0.0:26379" | grep -v grep) ] && rm -f $pid;
+    [ -f $sentinel_pid ] && [ -z $(ps aux|grep "redis-server 0.0.0.0:26379" | grep -v grep) ] && rm -f $sentinel_pid;
     if ! [ -f $pid ]; then
-        kill -9 $(ps aux|grep "redis-server -" | grep -v "redis-server - --sentinel" | grep -v grep | awk '{print $2}') 2>/dev/null;
+        kill -9 $(ps aux|grep "redis-server 0.0.0.0:6379" | grep -v "redis-server 0.0.0.0:26379" | grep -v grep | awk '{print $2}') 2>/dev/null;
         chmod 755 /opt/repo/env;
-        echo $REDIS_CLI > env/REDIS_CLI;
-        erb conf/redis.conf.erb | redis-server -
+        echo $REDIS_CLI > /opt/repo/env/REDIS_CLI;
+        erb /opt/repo/conf/redis.conf.erb > /opt/repo/conf/redis.conf; /opt/repo/versions/${Version}/bin/redis-server /opt/repo/conf/redis.conf
 
         ret=$?
         if [ $ret -ne 0 ]; then
@@ -81,9 +83,9 @@ function start() {
         echo "Redis server is already started"
     fi
     if ! [ -f $sentinel_pid ]; then
-            kill -9 $(ps aux| grep "redis-server - --sentinel" | grep -v grep | awk '{print $2}') 2>/dev/null;
-            echo $REDIS_SENTINEL_CLI > env/REDIS_SENTINEL_CLI
-            erb conf/redis-sentinel.conf.erb | redis-server - --sentinel
+            kill -9 $(ps aux| grep "redis-server 0.0.0.0:26379" | grep -v grep | awk '{print $2}') 2>/dev/null;
+            echo $REDIS_SENTINEL_CLI > /opt/repo/env/REDIS_SENTINEL_CLI
+            erb /opt/repo/conf/redis-sentinel.conf.erb > /opt/repo/conf/redis-sentinel.conf; /opt/repo/versions/${Version}/bin/redis-server /opt/repo/conf/redis-sentinel.conf --sentinel
             ret=$?
             if [ $ret -ne 0 ]; then
                 echo "Redis Sentinel failed to start - $ret" 1>&2
@@ -178,4 +180,4 @@ case "$1" in
     update)              update      ;;
     use-source)          use-source  $2 $3 ;;
     *)
-esac
+esac 
