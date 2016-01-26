@@ -3,18 +3,17 @@ Cartridge-Short-Name: REDIS
 Display-Name: Redis
 Description: "Redis is a NoSQL database server"
 Version: "2.8"
-Website: https://github.com/smarterclayton/openshift-redis-cart
 Source-Url: https://github.com/SiryjVyiko/openshift-redis-cart.git
 Cartridge-Version: 0.1.0
 License: GPL
-Vendor: smarterclayton
-Cartridge-Vendor: smarterclayton
+Vendor: jelastic
+Cartridge-Vendor: jelastic
 Categories:
   - service
   - database
   - embedded
 Provides:
-  - redis-2.6
+  - redis-2.8
   - redis
 Scaling:
   Min: 1
