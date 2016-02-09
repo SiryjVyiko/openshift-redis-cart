@@ -35,4 +35,4 @@ wget "http://production.cf.rubygems.org/rubygems/rubygems-2.2.2.tgz" -O /tmp/rub
 tar xfvz rubygems.tgz && cd rubygems-2.2.2/ && ruby setup.rb --no-ri --no-rdoc;
 gem install redis --no-ri --no-rdoc;
 
- chmod -Rf  555 $CARTRIDGE_HOME/env &>/dev/null;
+#chmod -Rf  555 $CARTRIDGE_HOME/env &>/dev/null;
